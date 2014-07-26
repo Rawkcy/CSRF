@@ -14,15 +14,19 @@ Ze Stack Dou
 - Stormpath
   - online user login hosting service for Flask applications
 
-HOWTO in CODE
+HOWTO run app in CODE
 -------------
 git clone https://github.com/Rawkcy/CSRF.git
 flask-app/bin/python CSRF.py
 
-HOWTO in BROWSER
+HOWTO run app in BROWSER
 ----------------
 load `localhost:5000` in browser
 login with credentials
+
+HOWTO CSRF attack
+-----------------
+load 'attack/badform.html' in browser
 
 CREDITS
 -------

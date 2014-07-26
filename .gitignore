@@ -2,3 +2,4 @@
 *.py~
 *.pyo
 apiKey.properties
+.DS_STORE
