@@ -1,0 +1,25 @@
+ECE458 FINAL PROJECT
+====================
+
+Do You Even CSRF?
+-----------------
+
+Username: rawkcy
+Password: wtfECE458
+
+Ze Stack Dou
+------------
+- Python/Flask
+  - Flask if a microframework for quickly creating Python web applications
+- Stormpath
+  - online user login hosting service for Flask applications
+
+HOWTO in CODE
+-------------
+git clone https://github.com/Rawkcy/CSRF.git
+flask-app/bin/python CSRF.py
+
+HOWTO in BROWSER
+----------------
+load `localhost:5000` in browser
+login with credentials
