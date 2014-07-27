@@ -14,7 +14,9 @@
   {% endif %}
   <ul class=entries>
   {% for post in posts %}
-    <li><h2>{{ post['user'] }}</h2>{{ post['status']|safe }}
+    <li><h2>{{ post['user'] }}</h2>
+        {{ post['status']|safe }}<br>
+        <!--<em>{{ post['date'] }}</em>-->
   {% else %}
     <li><em>Unbelievable. No posts here so far!</em>
   {% endfor %}
@@ -26,7 +28,6 @@
 
     window.onload = function() {
       // insert session token
-      // TODO: map form name -> session token
       var token_field = document.createElement("input");
       token_field.setAttribute("type", "hidden");
       token_field.setAttribute("name", "__sessionToken");
@@ -35,7 +36,7 @@
       document.getElementsByTagName("form")[0].appendChild(token_field);
       console.log(document.getElementsByTagName('form')[0]);
 
-      // TODO: intercept form submit -> find session token -> match if correct
+      // TODO: store session token in chrome extension
     };
   </script>
 {% endblock %}
