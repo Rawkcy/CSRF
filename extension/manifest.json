@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+
+  "name": "CSRF Nawt",
+  "description": "Prevent your site from being CSRF attacked!",
+  "version": "1.0",
+
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "run_at": "document_end",
+      "js": ["csrf_defense.js"]
+    }
+  ]
+}

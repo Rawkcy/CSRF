@@ -22,21 +22,6 @@
   {% endfor %}
   </ul>
   <script type="text/javascript">
-    //token(); // "bnh5yzdirjinqaorq0ox1tf383nb3xr"
-    var rand = function() { return Math.random().toString(36).substr(2); }; // remove `0.`
-    var token = function() { return rand() + rand(); }; // to make it longer
-
-    window.onload = function() {
-      // insert session token
-      var token_field = document.createElement("input");
-      token_field.setAttribute("type", "hidden");
-      token_field.setAttribute("name", "__sessionToken");
-      token_field.setAttribute("value", token());
-      //append to form element that you want
-      document.getElementsByTagName("form")[0].appendChild(token_field);
-      console.log(document.getElementsByTagName('form')[0]);
-
-      // TODO: store session token in chrome extension
-    };
+    // FUNCTION MOVED TO EXTENSION JS CODE
   </script>
 {% endblock %}
