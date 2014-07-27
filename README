@@ -1,11 +1,38 @@
 ECE458 FINAL PROJECT
 ====================
 
-Do You Even CSRF?
------------------
+Faycebook Protection
+--------------------
+
+1. Session token is generated and stored on extension activation.
+2. Extension script runs on all pages, look for forms with `method="POST"`
+attribute, adds an `onsubmit` event.
+3. When form is submited, script looks for field `__sessionToken`.
+4. Reject if token value is NULL or does not equal current session.
+
+App Login
+---------
 
 Username: rawkcy
 Password: wtfECE458
+
+SETUP
+-----
+Firstly, in terminal
+git clone https://github.com/Rawkcy/CSRF.git
+flask-app/bin/python CSRF.py
+
+Secondly, in browser
+load `localhost:5000/faycebook`
+login with credentials
+
+Lastly, attack
+load 'attack/badform.html' in browser
+
+Finally, protect
+load and activate extension
+load 'attack/badform.html' in browser
+BOOM, REJECTED!
 
 Ze Stack Dou
 ------------
@@ -13,20 +40,6 @@ Ze Stack Dou
   - Flask if a microframework for quickly creating Python web applications
 - Stormpath
   - online user login hosting service for Flask applications
-
-HOWTO run app in CODE
--------------
-git clone https://github.com/Rawkcy/CSRF.git
-flask-app/bin/python CSRF.py
-
-HOWTO run app in BROWSER
-----------------
-load `localhost:5000` in browser
-login with credentials
-
-HOWTO CSRF attack
------------------
-load 'attack/badform.html' in browser
 
 CREDITS
 -------

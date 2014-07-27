@@ -29,7 +29,7 @@ app.config['STORMPATH_APPLICATION'] = 'CSRF'
 stormpath_manager = StormpathManager(app)
 
 
-@app.route('/')
+@app.route('/faycebook')
 def show_posts():
     posts = []
     for account in stormpath_manager.application.accounts:
@@ -40,7 +40,7 @@ def show_posts():
     return render_template('show_posts.html', posts=posts)
 
 
-@app.route('/add', methods=['POST'])
+@app.route('/faycebook/add', methods=['POST'])
 @login_required
 def add_post():
     if not user.custom_data.get('posts'):
@@ -48,8 +48,8 @@ def add_post():
 
     user.custom_data['posts'].append({
         'date': datetime.utcnow().isoformat(),
-        'title': request.form['title'],
-        'text': request.form['text'],
+        'user': request.form['user'],
+        'status': request.form['status'],
     })
     user.save()
 
@@ -57,7 +57,7 @@ def add_post():
     return redirect(url_for('show_posts'))
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/faycebook/login', methods=['GET', 'POST'])
 def login():
     error = None
 
@@ -77,7 +77,7 @@ def login():
     return render_template('login.html', error=error)
 
 
-@app.route('/logout')
+@app.route('/faycebook/logout')
 def logout():
     logout_user()
     flash('You were logged out.')

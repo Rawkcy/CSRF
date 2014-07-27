@@ -3,19 +3,39 @@
   {% if user.email %}
     <form action="{{ url_for('add_post') }}" method=post class=add-entry>
       <dl>
-        <dt>Title:
-        <dd><input type=text size=30 name=title>
-        <dt>Text:
-        <dd><textarea name=text rows=5 cols=40></textarea>
+        <dt>User:
+        <dd><input type=text size=30 name=user>
+        <dt>Status:
+        <dd><textarea name=status rows=5 cols=40></textarea>
+        <!--<dd><input type="hidden" name="__sessionToken">-->
         <dd><input type=submit value=Share>
       </dl>
     </form>
   {% endif %}
   <ul class=entries>
   {% for post in posts %}
-    <li><h2>{{ post['title'] }}</h2>{{ post['text']|safe }}
+    <li><h2>{{ post['user'] }}</h2>{{ post['status']|safe }}
   {% else %}
     <li><em>Unbelievable. No posts here so far!</em>
   {% endfor %}
   </ul>
+  <script type="text/javascript">
+    //token(); // "bnh5yzdirjinqaorq0ox1tf383nb3xr"
+    var rand = function() { return Math.random().toString(36).substr(2); }; // remove `0.`
+    var token = function() { return rand() + rand(); }; // to make it longer
+
+    window.onload = function() {
+      // insert session token
+      // TODO: map form name -> session token
+      var token_field = document.createElement("input");
+      token_field.setAttribute("type", "hidden");
+      token_field.setAttribute("name", "__sessionToken");
+      token_field.setAttribute("value", token());
+      //append to form element that you want
+      document.getElementsByTagName("form")[0].appendChild(token_field);
+      console.log(document.getElementsByTagName('form')[0]);
+
+      // TODO: intercept form submit -> find session token -> match if correct
+    };
+  </script>
 {% endblock %}
