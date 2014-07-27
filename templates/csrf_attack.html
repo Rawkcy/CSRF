@@ -19,7 +19,6 @@
       // override submit handling
       HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;
       HTMLFormElement.prototype.submit = interceptor;
-      //console.log("interceptor_setup is called");
 
       // define our 'submit' handler on window, to avoid defining
       // on individual forms
@@ -37,13 +36,12 @@
     // or as a result of submit handler on window (arg: event)
     function interceptor(e) {
       var frm = e ? e.target : this;
-      //console.log("interceptor(e) got called");
-//      if (frm.action.indexOf('faycebook') != -1) {
-      if (false) {
-        //console.log('Attacking Faycebook la!');
+      if (frm.action.indexOf('faycebook') != -1) {
+//      if (false) {
+        console.log('Attacking Faycebook la! Helllll naw.');
         return false;
       } else {
-        //console.log('not attacking facebook, forwarding the form request');
+        console.log('Not attacing Faycebook, let pass.;);
         HTMLFormElement.prototype.real_submit.apply(frm);
       }
     }

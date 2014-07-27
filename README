@@ -30,7 +30,7 @@ Lastly, attack
 load 'attack/badform.html' in browser
 
 Finally, protect
-load and activate extension
+load and activate extension/
 load 'attack/badform.html' in browser
 BOOM, REJECTED!
 

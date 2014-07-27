@@ -39,6 +39,10 @@ def show_posts():
     posts = sorted(posts, key=lambda k: k['date'], reverse=True)
     return render_template('show_posts.html', posts=posts)
 
+@app.route('/attack')
+def attack():
+    return render_template('csrf_attack.html')
+
 
 @app.route('/faycebook/add', methods=['POST'])
 @login_required
