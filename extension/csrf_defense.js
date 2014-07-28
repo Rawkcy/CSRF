@@ -3,8 +3,40 @@
 // found in the LICENSE file.
 
 
-// generate session token for Faycebook
+var interceptor_setup = function() {
+  // override submit handling
+  HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;
+  HTMLFormElement.prototype.submit = interceptor;
+
+  // define our 'submit' handler on window, to avoid defining
+  // on individual forms
+  window.addEventListener('submit', function(e) {
+    // stop the event before it gets to the element and causes onsubmit to
+    // get called.
+    e.stopPropagation( );
+    // stop the form from submitting
+    e.preventDefault( );
+
+    interceptor(e);
+  }, true);
+  console.log("interceptor_setup is called");
+}
+// interceptor: called in place of form.submit( )
+// or as a result of submit handler on window (arg: event)
+var interceptor = function(e) {
+  var frm = e ? e.target : this;
+  if (frm.action.indexOf('faycebook') != -1) {
+    console.log('Attacking Faycebook la! Helllll naw.');
+    return false;
+  } else {
+    console.log('Not attacking Faycebook, let pass.');
+    HTMLFormElement.prototype.real_submit.apply(frm);
+  }
+  console.log("interceptor is called");
+}
+
 if (document.URL.indexOf('faycebook') != -1) {
+  // generate session token for Faycebook session
   console.log('CSRF Nawt is running!');
   var rand = function() { return Math.random().toString(36).substr(2); }; // remove `0.`
   var generate_token = function() { return rand() + rand(); }; // to make it longer
@@ -28,4 +60,8 @@ if (document.URL.indexOf('faycebook') != -1) {
   }
 } else {
   console.log("This is not Faycebook.com");
+  window.onload = function() {
+    interceptor_setup();
+  }
+  console.log("end of else");
 }

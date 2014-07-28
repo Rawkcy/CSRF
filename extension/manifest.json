@@ -9,7 +9,7 @@
     {
       "matches": ["*://*/*"],
       "run_at": "document_end",
-      "js": ["csrf_defense.js"]
+      "js": ["jquery.js", "csrf_defense.js"]
     }
   ]
 }
