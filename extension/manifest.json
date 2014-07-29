@@ -7,7 +7,7 @@
 
   "permissions": ["tabs"],
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["csrf_server.js"],
     "persistent": false
   },
   "content_scripts": [

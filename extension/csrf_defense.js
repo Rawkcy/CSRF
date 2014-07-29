@@ -6,10 +6,10 @@
 // Last Modified    July 28, 2014
 
 
+console.log('CSRF protect is on.');
 if (document.URL.indexOf('faycebook') != -1) {
 
   // generate session token for Faycebook.com
-  console.log('CSRF Nawt gotchu protected!');
   var rand = function() { return Math.random().toString(36).substr(2); }; // remove `0.`
   var generate_token = function() { return rand() + rand(); }; // to make it longer
   var token = generate_token();
@@ -26,14 +26,12 @@ if (document.URL.indexOf('faycebook') != -1) {
 
   // send session token to server to store
   chrome.runtime.sendMessage({func: "setToken", value: token}, function(response) {
-    console.log(response.msg);
+    console.log("Server status: " + response.flag);
   });
-  console.log("Session token " + token + " was inserted and sent to server.");
+  console.info(token + " inserted to form and saved on server.");
 
 } else {
 
-  // check if session token matches
-  console.log("This is not Faycebook.com");
   // js HACK to override form submissions
   var intercept_setup_code = '(' + function() {
     var interceptor_setup = function() {
@@ -62,7 +60,12 @@ if (document.URL.indexOf('faycebook') != -1) {
         }
       }
       if (request_to_fb && has_sessionToken_input) {
-        // TODO check sessionToken matches 
+        // send session token to server to store
+        chrome.runtime.sendMessage({func: "getToken"}, function(response) {
+          console.log(response);
+//          console.log("Current session token is: " + response.msg);
+        });
+        // TODO get session token from server!!!!
         console.log("Attacking Faycebook la! Helllll naw.");
         console.log("token value: " + token);
         return false;
