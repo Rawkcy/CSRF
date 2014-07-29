@@ -55,13 +55,6 @@ if (document.URL.indexOf('faycebook') != -1) {
         interceptor(e);
       }, true);
     }
-    //var get_sessionToken = function() {
-    //  chrome.runtime.sendMessage({func: "getToken"}, function(response) {
-    //    console.log(response);
-    //    //sessionToken = response.msg;
-    //    console.log("Event: Received " + sessionToken + " from server.");
-    //  });
-    //};
     var interceptor = function(e) {
       var frm = e ? e.target : this;
       // is form being submitted to Faycebook?
@@ -119,16 +112,41 @@ if (document.URL.indexOf('faycebook') != -1) {
       // server is up and running
       console.log("Successfully connected to server.");
       chrome.runtime.sendMessage({func: "getToken"}, function(response) {
-        var sessionToken = response.msg;
-        console.log("Event: Received " + sessionToken + " from server.");
-        // call injected js
-        // form submission override and set session token
-        var intercept_code = 'interceptor_setup();getSessionToken("' + sessionToken + '");';
-        document.documentElement.setAttribute('onreset', intercept_code);
-        document.documentElement.dispatchEvent(new CustomEvent('reset'));
+        if (response.flag == 0) {
+          // got valid token
+          var sessionToken = response.msg;
+          console.log("Event: Received " + sessionToken + " from server.");
+          // call injected js
+          // form submission override and set session token
+          var intercept_code = 'interceptor_setup();getSessionToken("' + sessionToken + '");';
+          document.documentElement.setAttribute('onreset', intercept_code);
+          document.documentElement.dispatchEvent(new CustomEvent('reset'));
+        } else {
+          console.log("Event: Unable to retrieve token from server. There is likely no Faycebook session open.");
+        }
       });
     } else {
       console.log("Failed to connect to server.");
+    }
+  });
+  chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.msg == "tokenUpdated") {
+      console.log("Event: Token was updated on server. Retrieving new session token ...");
+      chrome.runtime.sendMessage({func: "getToken"}, function(response) {
+        if (response.flag == 0) {
+          // got valid token
+          var sessionToken = response.msg;
+          console.log("Event: Received " + sessionToken + " from server.");
+          // call injected js
+          // form submission override and set session token
+          var intercept_code = 'getSessionToken("' + sessionToken + '");';
+          document.documentElement.setAttribute('onreset', intercept_code);
+          document.documentElement.dispatchEvent(new CustomEvent('reset'));
+        } else {
+          console.log("Event: Unable to retrieve token from server. There is likely no Faycebook session open.");
+        }
+      });
+      sendResponse({flag:0, msg:""});
     }
   });
 }
