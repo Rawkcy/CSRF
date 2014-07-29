@@ -7,13 +7,14 @@
 
 
 if (document.URL.indexOf('faycebook') != -1) {
-  // generate session token for Faycebook session
+
+  // generate session token for Faycebook.com
   console.log('CSRF Nawt gotchu protected!');
   var rand = function() { return Math.random().toString(36).substr(2); }; // remove `0.`
   var generate_token = function() { return rand() + rand(); }; // to make it longer
-  console.log("Generating session token ...");
   var token = generate_token();
 
+  // update form field with session token
   var token_field = document.createElement("input");
   token_field.setAttribute("type", "hidden");
   token_field.setAttribute("name", "__sessionToken");
@@ -22,9 +23,18 @@ if (document.URL.indexOf('faycebook') != -1) {
   for (var i=0; i<forms.length; i++) {
     forms[i].appendChild(token_field);
   }
-  console.log("Session token " + token + " was inserted.");
+
+  // send session token to server to store
+  chrome.runtime.sendMessage({func: "setToken", value: token}, function(response) {
+    console.log(response.msg);
+  });
+  console.log("Session token " + token + " was inserted and sent to server.");
+
 } else {
+
+  // check if session token matches
   console.log("This is not Faycebook.com");
+  // js HACK to override form submissions
   var intercept_setup_code = '(' + function() {
     var interceptor_setup = function() {
       HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;
@@ -38,39 +48,44 @@ if (document.URL.indexOf('faycebook') != -1) {
     var interceptor = function(e) {
       var frm = e ? e.target : this;
       var is_legit_form = false;
-      var inputs = frm.getElementsByTagName("input");
-      console.log(frm);
-      console.log(inputs);
-      if (frm.action.indexOf("faycebook") != -1) {
+      // indexOf returns pos of the str if exists
+      var request_to_fb = frm.action.indexOf("faycebook") != -1;
+
+      if (request_to_fb) {
+        var inputs = frm.getElementsByTagName("input");
+        var has_sessionToken_input = false;
+        for (var i = 0; i < inputs.length; i++) {
+          if (inputs[i].name == "__sessionToken") {
+            has_sessionToken_input = true;
+            var token = inputs[i].value;
+          }
+        }
+      }
+      if (request_to_fb && has_sessionToken_input) {
+        // TODO check sessionToken matches 
         console.log("Attacking Faycebook la! Helllll naw.");
+        console.log("token value: " + token);
         return false;
       } else {
         console.log("Not attacking Faycebook, let pass.");
         HTMLFormElement.prototype.real_submit.apply(frm);
       }
     }
-    // All code is executed in a local scope.
-    // Therefore, overwrite a global variable, prefix `window`:
+    // above code executed in a local scope
+    // therefore, assign to global variable -> prefix `window`
     window.interceptor_setup = interceptor_setup;
     window.interceptor = interceptor;
   } + ')();';
-  // inject js
   // use function to stringify injected code
   var script = document.createElement('script');
   script.textContent = intercept_setup_code;
   (document.head||document.documentElement).appendChild(script);
 
   // call injected js
-  var intercept_code = 'interceptor_setup()';
+  var intercept_code = 'interceptor_setup()'; // form submission override happens here
   document.documentElement.setAttribute('onreset', intercept_code);
   document.documentElement.dispatchEvent(new CustomEvent('reset'));
 
   $(document).ready(function() {
   });
-  //chrome.tabs.query(null, function(tabs){
-  //  for (var i = 0; i < tabs.length; i++) {
-  //    console.log(tabs[i]);
-//      chrome.tabs.sendRequest(tabs[i].id, { action: "xxx" });
-    //}
-  //});
 }

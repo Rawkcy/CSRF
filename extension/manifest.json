@@ -4,12 +4,17 @@
   "name": "CSRF Nawt",
   "description": "Prevent your site from being CSRF attacked!",
   "version": "1.0",
+
   "permissions": ["tabs"],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
   "content_scripts": [
     {
       "matches": ["*://*/*"],
       "run_at": "document_idle",
-      "js": ["jquery.js", "csrf_defense.js"]
+      "js": ["lib/jquery.js", "csrf_defense.js"]
     }
   ]
 }
