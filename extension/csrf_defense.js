@@ -7,6 +7,13 @@
 
 
 console.log('CSRF protect is on.');
+// make sure server is live
+chrome.runtime.sendMessage({func: "isAlive"}, function(response) {
+  console.info("Connected to server: " + response.msg);
+  console.info("Server status: " + response.flag);
+});
+var sessionToken;
+
 if (document.URL.indexOf('faycebook') != -1) {
 
   // generate session token for Faycebook.com
@@ -26,12 +33,15 @@ if (document.URL.indexOf('faycebook') != -1) {
 
   // send session token to server to store
   chrome.runtime.sendMessage({func: "setToken", value: token}, function(response) {
-    console.log("Server status: " + response.flag);
+    console.log("Event: Sent " + token + " to server.");
   });
-  console.info(token + " inserted to form and saved on server.");
 
 } else {
 
+  chrome.runtime.sendMessage({func: "getToken"}, function(response) {
+    console.log("Event: Received " + response.msg + " from server.");
+    window.sessionToken = response.msg;
+  });
   // js HACK to override form submissions
   var intercept_setup_code = '(' + function() {
     var interceptor_setup = function() {
@@ -45,9 +55,8 @@ if (document.URL.indexOf('faycebook') != -1) {
     }
     var interceptor = function(e) {
       var frm = e ? e.target : this;
-      var is_legit_form = false;
-      // indexOf returns pos of the str if exists
-      var request_to_fb = frm.action.indexOf("faycebook") != -1;
+      // is form being submitted to Faycebook?
+      var request_to_fb = (frm.action.indexOf("faycebook") != -1);
 
       if (request_to_fb) {
         var inputs = frm.getElementsByTagName("input");
@@ -56,21 +65,22 @@ if (document.URL.indexOf('faycebook') != -1) {
           if (inputs[i].name == "__sessionToken") {
             has_sessionToken_input = true;
             var token = inputs[i].value;
+            var token_matches = (token == window.sessionToken);
           }
         }
       }
       if (request_to_fb && has_sessionToken_input) {
-        // send session token to server to store
-        chrome.runtime.sendMessage({func: "getToken"}, function(response) {
-          console.log(response);
-//          console.log("Current session token is: " + response.msg);
-        });
-        // TODO get session token from server!!!!
-        console.log("Attacking Faycebook la! Helllll naw.");
-        console.log("token value: " + token);
-        return false;
+        console.log("Submitting form to Faycebook with session token: " + token);
+        console.log("sessiontoken: " + window.sessionToken);
+        if (token_matches) {
+          console.log("Correct token. Successfully submitted form to Faycebook.");
+          HTMLFormElement.prototype.real_submit.apply(frm);
+        } else {
+          console.log("Incorrect token. Failed to submitted form to Faycebook.");
+          return false;
+        }
       } else {
-        console.log("Not attacking Faycebook, let pass.");
+        console.log("Not submitting form to Faycebook.");
         HTMLFormElement.prototype.real_submit.apply(frm);
       }
     }
@@ -88,7 +98,4 @@ if (document.URL.indexOf('faycebook') != -1) {
   var intercept_code = 'interceptor_setup()'; // form submission override happens here
   document.documentElement.setAttribute('onreset', intercept_code);
   document.documentElement.dispatchEvent(new CustomEvent('reset'));
-
-  $(document).ready(function() {
-  });
 }

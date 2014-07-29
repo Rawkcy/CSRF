@@ -14,7 +14,7 @@
     {
       "matches": ["*://*/*"],
       "run_at": "document_idle",
-      "js": ["lib/jquery.js", "csrf_defense.js"]
+      "js": ["csrf_defense.js"]
     }
   ]
 }
