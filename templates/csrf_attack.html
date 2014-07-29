@@ -16,45 +16,5 @@
     <input type="submit" />
   </form>
   <iframe style="display:none" name="hidden-form"></iframe>
-
-  <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
-  <script type="text/javascript">
-    //function interceptor_setup( )
-    //{
-    //  // override submit handling
-    //  HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;
-    //  HTMLFormElement.prototype.submit = interceptor;
-
-    //  // define our 'submit' handler on window, to avoid defining
-    //  // on individual forms
-    //  window.addEventListener('submit', function(e) {
-    //    // stop the event before it gets to the element and causes onsubmit to
-    //    // get called.
-    //    e.stopPropagation( );
-    //    // stop the form from submitting
-    //    e.preventDefault( );
-
-    //    interceptor(e);
-    //  }, true);
-    //}
-    //// interceptor: called in place of form.submit( )
-    //// or as a result of submit handler on window (arg: event)
-    //function interceptor(e) {
-    //  var frm = e ? e.target : this;
-    //  if (frm.action.indexOf('faycebook') != -1) {
-//  //    if (false) {
-    //    console.log('Attacking Faycebook la! Helllll naw.');
-    //    return false;
-    //  } else {
-    //    console.log('Not attacking Faycebook, let pass.');
-    //    HTMLFormElement.prototype.real_submit.apply(frm);
-    //  }
-    //}
-
-    window.onload = function() {
-      //interceptor_setup();
-      //document.attackFaycebook.submit();
-    };
-  </script>
 </body>
 </html>

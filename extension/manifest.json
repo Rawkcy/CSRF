@@ -4,7 +4,7 @@
   "name": "CSRF Nawt",
   "description": "Prevent your site from being CSRF attacked!",
   "version": "1.0",
-
+  "permissions": ["tabs"],
   "content_scripts": [
     {
       "matches": ["*://*/*"],
