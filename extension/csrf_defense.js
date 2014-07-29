@@ -7,12 +7,6 @@
 
 
 console.log('CSRF protect is on.');
-// make sure server is live
-chrome.runtime.sendMessage({func: "isAlive"}, function(response) {
-  console.info("Connected to server: " + response.msg);
-  console.info("Server status: " + response.flag);
-});
-var sessionToken;
 
 if (document.URL.indexOf('faycebook') != -1) {
 
@@ -31,19 +25,27 @@ if (document.URL.indexOf('faycebook') != -1) {
     forms[i].appendChild(token_field);
   }
 
-  // send session token to server to store
-  chrome.runtime.sendMessage({func: "setToken", value: token}, function(response) {
-    console.log("Event: Sent " + token + " to server.");
+  // check server status
+  chrome.runtime.sendMessage({func: "isAlive"}, function(response) {
+    console.log("Connecting to server ...");
+
+    if (response.flag == 0) {
+      // server is up and running
+      console.log("Successfully connected to server.");
+      // send session token to server to store
+      chrome.runtime.sendMessage({func: "setToken", value: token}, function(response) {
+        console.log("Event: Sent " + token + " to server.");
+      });
+    } else {
+      console.log("Failed to connect to server.");
+    }
   });
 
 } else {
 
-  chrome.runtime.sendMessage({func: "getToken"}, function(response) {
-    console.log("Event: Received " + response.msg + " from server.");
-    window.sessionToken = response.msg;
-  });
-  // js HACK to override form submissions
+  // js injection to override form submissions
   var intercept_setup_code = '(' + function() {
+    var sessionToken;
     var interceptor_setup = function() {
       HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;
       HTMLFormElement.prototype.submit = interceptor;
@@ -53,6 +55,13 @@ if (document.URL.indexOf('faycebook') != -1) {
         interceptor(e);
       }, true);
     }
+    //var get_sessionToken = function() {
+    //  chrome.runtime.sendMessage({func: "getToken"}, function(response) {
+    //    console.log(response);
+    //    //sessionToken = response.msg;
+    //    console.log("Event: Received " + sessionToken + " from server.");
+    //  });
+    //};
     var interceptor = function(e) {
       var frm = e ? e.target : this;
       // is form being submitted to Faycebook?
@@ -65,18 +74,24 @@ if (document.URL.indexOf('faycebook') != -1) {
           if (inputs[i].name == "__sessionToken") {
             has_sessionToken_input = true;
             var token = inputs[i].value;
-            var token_matches = (token == window.sessionToken);
+            var token_matches = (token == sessionToken);
           }
         }
       }
       if (request_to_fb && has_sessionToken_input) {
         console.log("Submitting form to Faycebook with session token: " + token);
-        console.log("sessiontoken: " + window.sessionToken);
         if (token_matches) {
-          console.log("Correct token. Successfully submitted form to Faycebook.");
+          console.log("Session token is correct. Successfully submitted form to Faycebook.");
           HTMLFormElement.prototype.real_submit.apply(frm);
         } else {
-          console.log("Incorrect token. Failed to submitted form to Faycebook.");
+          console.log("Session token is incorrect. Failed to submitted form to Faycebook.");
+          // tell server someone tried to attack Faycebook
+          //chrome.runtime.sendMessage({func: "failedAttack"}, function(response) {
+          //  //var error_message = "Attack detected from " + response.msg;
+          //  console.log(response);
+          //  //alert(error_message);
+          //  console.log("Event: Sent failed attack signal to server.");
+          //});
           return false;
         }
       } else {
@@ -84,18 +99,36 @@ if (document.URL.indexOf('faycebook') != -1) {
         HTMLFormElement.prototype.real_submit.apply(frm);
       }
     }
+    var getSessionToken = function(token) { sessionToken = token; }
     // above code executed in a local scope
     // therefore, assign to global variable -> prefix `window`
     window.interceptor_setup = interceptor_setup;
     window.interceptor = interceptor;
+    window.getSessionToken = getSessionToken;
   } + ')();';
   // use function to stringify injected code
   var script = document.createElement('script');
   script.textContent = intercept_setup_code;
   (document.head||document.documentElement).appendChild(script);
 
-  // call injected js
-  var intercept_code = 'interceptor_setup()'; // form submission override happens here
-  document.documentElement.setAttribute('onreset', intercept_code);
-  document.documentElement.dispatchEvent(new CustomEvent('reset'));
+  // server status check
+  chrome.runtime.sendMessage({func: "isAlive"}, function(response) {
+    console.log("Connecting to server ...");
+
+    if (response.flag == 0) {
+      // server is up and running
+      console.log("Successfully connected to server.");
+      chrome.runtime.sendMessage({func: "getToken"}, function(response) {
+        var sessionToken = response.msg;
+        console.log("Event: Received " + sessionToken + " from server.");
+        // call injected js
+        // form submission override and set session token
+        var intercept_code = 'interceptor_setup();getSessionToken("' + sessionToken + '");';
+        document.documentElement.setAttribute('onreset', intercept_code);
+        document.documentElement.dispatchEvent(new CustomEvent('reset'));
+      });
+    } else {
+      console.log("Failed to connect to server.");
+    }
+  });
 }
