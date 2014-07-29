@@ -25,29 +25,37 @@ if (document.URL.indexOf('faycebook') != -1) {
   console.log("Session token " + token + " was inserted.");
 } else {
   console.log("This is not Faycebook.com");
+  var intercept_setup_code = '(' + function() {
+    var interceptor_setup = function() {
+      HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;
+      HTMLFormElement.prototype.submit = interceptor;
+      window.addEventListener("submit", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        interceptor(e);
+      }, true);
+    }
+    var interceptor = function(e) {
+      var frm = e ? e.target : this;
+      var is_legit_form = false;
+      var inputs = frm.getElementsByTagName("input");
+      console.log(frm);
+      console.log(inputs);
+      if (frm.action.indexOf("faycebook") != -1) {
+        console.log("Attacking Faycebook la! Helllll naw.");
+        return false;
+      } else {
+        console.log("Not attacking Faycebook, let pass.");
+        HTMLFormElement.prototype.real_submit.apply(frm);
+      }
+    }
+    // All code is executed in a local scope.
+    // Therefore, overwrite a global variable, prefix `window`:
+    window.interceptor_setup = interceptor_setup;
+    window.interceptor = interceptor;
+  } + ')();';
   // inject js
-  var intercept_setup_code = '\
-    function interceptor_setup() {\
-      HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;\
-      HTMLFormElement.prototype.submit = interceptor;\
-      window.addEventListener("submit", function(e) {\
-        e.stopPropagation();\
-        e.preventDefault();\
-        interceptor(e);\
-      }, true);\
-    }\
-    function interceptor(e) {\
-      var frm = e ? e.target : this;\
-      var is_legit_form = false;\
-      var inputs = frm.getElementsByTagName("input");\
-      if (frm.action.indexOf("faycebook") != -1) {\
-        console.log("Attacking Faycebook la! Helllll naw.");\
-        return false;\
-      } else {\
-        console.log("Not attacking Faycebook, let pass.");\
-        HTMLFormElement.prototype.real_submit.apply(frm);\
-      }\
-    }';
+  // use function to stringify injected code
   var script = document.createElement('script');
   script.textContent = intercept_setup_code;
   (document.head||document.documentElement).appendChild(script);
