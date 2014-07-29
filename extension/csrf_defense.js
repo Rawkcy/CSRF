@@ -62,6 +62,10 @@ if (document.URL.indexOf('faycebook') != -1) {
   }
 } else {
   console.log("This is not Faycebook.com");
+  window.onload = function() {
+    interceptor_setup();
+    console.log("window.onload()");
+  }
   interceptor_setup();
   console.log("end of else");
 }
