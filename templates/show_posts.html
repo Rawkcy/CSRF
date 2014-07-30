@@ -1,12 +1,13 @@
 {% extends "layout.html" %}
 {% block body %}
-  <ul class=entries>
+  {% if user.email %}
   {% for post in posts %}
-    <li><h2>{{ post['user'] }}</h2>
-        {{ post['status']|safe }}<br>
-        <!--<em>{{ post['date'] }}</em>-->
+  <div class="blog-post">
+    <h2 class="blog-post-title">{{ post['user'] }}</h2>
+    <p>{{ post['status']|safe }}<p>
+  </div>
   {% else %}
-    <li><em>Unbelievable. No posts here so far!</em>
+    <div class="blog-post"><h2 class="blog-post-title">Unbelievable. No posts here so far!</h2></div>
   {% endfor %}
-  </ul>
+  {% endif %}
 {% endblock %}

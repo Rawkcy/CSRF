@@ -1,24 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if user.email %}
-    <form action="{{ url_for('add_post') }}" method=post class=add-entry>
-      <dl>
-        <dt>User:
-        <dd><input type=text size=30 name=user>
-        <dt>Status:
-        <dd><textarea name=status rows=5 cols=40></textarea>
-        <!--<dd><input type="hidden" name="__sessionToken">-->
-        <dd><input type=submit value=Share>
-      </dl>
-    </form>
-  {% endif %}
-  <ul class=entries>
+  <form class="form-signin" role="form" action="{{ url_for('add_post') }}" method=post class=add-entry>
+    <h2 class="form-signin-heading">Post status below</h2>
+    <input type="user" name="user" class="form-control" placeholder="User" required autofocus>
+    <input type="status" name="status" class="form-control" placeholder="Status" required>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+  </form>
   {% for post in posts %}
-    <li><h2>{{ post['user'] }}</h2>
-        {{ post['status']|safe }}<br>
-        <!--<em>{{ post['date'] }}</em>-->
+  <div class="blog-post">
+    <h2 class="blog-post-title">{{ post['user'] }}</h2>
+    <p>{{ post['status']|safe }}<p>
+  </div>
   {% else %}
-    <li><em>Unbelievable. No posts here so far!</em>
+    <div class="blog-post"><h2 class="blog-post-title">Unbelievable. No posts here so far!</h2></div>
   {% endfor %}
-  </ul>
+  {% endif %}
 {% endblock %}

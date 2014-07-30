@@ -7,7 +7,7 @@ var getSiteName = function() {
 
     chrome.extension.sendMessage({func:"setSiteName", msg:site}, function(reponse) {
       if(reponse.flag == 0) {
-        alert("Success.");
+        console.log("Success.");
       }
     });
   }, true);

@@ -1,18 +1,35 @@
 <!doctype html>
 <title>Faycebook.com</title>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-<div class=page>
-  <h1>Please Faycebook Below</h1>
-  <div class=metanav>
-  {% if user.email %}
-    <a href="{{ url_for('logout') }}">log out</a>
-  {% else %}
-    <a href="{{ url_for('login') }}">log in</a>
-  {% endif %}
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='cover.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='blog.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='signin.css') }}">
+<!-- Latest compiled and minified JavaScript -->
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+<div class="site-wrapper">
+  <div class="site-wrapper-inner">
+    <div class="cover-container">
+      <div class="masthead clearfix">
+        <div class="inner">
+          <h3 class="masthead-brand">Faycebook</h3>
+          <ul class="nav masthead-nav">
+            {% if user.email %}<li><a href="{{ url_for('logout') }}">log out</a></li>
+            {% else %}<li><a href="{{ url_for('login') }}">log in</a></li>{% endif %}
+          </ul>
+        </div>
+      </div>
+      <div class="inner cover" style="margin-top:100px;">
+        {% for message in get_flashed_messages() %}
+          <div class=flash>{{ message }}</div>
+        {% endfor %}
+        {% block body %}{% endblock %}
+      </div>
+    </div>
   </div>
-  {% for message in get_flashed_messages() %}
-    <div class=flash>{{ message }}</div>
-  {% endfor %}
-  {% block body %}{% endblock %}
 </div>
