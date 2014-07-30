@@ -17,6 +17,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             chrome.tabs.sendMessage(tabs[i].id, {flag:0, msg:"tokenUpdated"}, function(response) {
               console.log("Sent: Token updated signal sent to clients.");
             });
+          } else {
+            console.log('should have skipped one.');
           }
         }
       });
@@ -31,8 +33,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         sendResponse({flag:0, msg:token});
       }
     }
-    if (request.func == "failedAttack") {
+    if (request.func == "attackDetected") {
       console.info("Received: Attack from " + sender_info + " was detected.");
-      sendResponse({flag:0, msg:"URL: " + sender.tab.url + " ID: " + sender.tab.id});
+      sendResponse({flag:2, msg:"Attacker with URL: " + sender.tab.url + " and ID: " + sender.tab.id});
     }
 });

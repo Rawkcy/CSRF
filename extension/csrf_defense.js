@@ -40,12 +40,19 @@ if (document.URL.indexOf('faycebook') != -1) {
       console.log("Failed to connect to server.");
     }
   });
+  chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.flag == 2) {
+      console.log("Event: got attacked.");
+      console.log(request.msg);
+      sendResponse({flag:0, msg:""});
+    }
+  });
 
 } else {
 
   // js injection to override form submissions
   var intercept_setup_code = '(' + function() {
-    var sessionToken;
+//    var sessionToken;
     var interceptor_setup = function() {
       HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;
       HTMLFormElement.prototype.submit = interceptor;
@@ -67,7 +74,7 @@ if (document.URL.indexOf('faycebook') != -1) {
           if (inputs[i].name == "__sessionToken") {
             has_sessionToken_input = true;
             var token = inputs[i].value;
-            var token_matches = (token == sessionToken);
+            var token_matches = (token == getCurrSessionToken());
           }
         }
       }
@@ -78,13 +85,6 @@ if (document.URL.indexOf('faycebook') != -1) {
           HTMLFormElement.prototype.real_submit.apply(frm);
         } else {
           console.log("Session token is incorrect. Failed to submitted form to Faycebook.");
-          // tell server someone tried to attack Faycebook
-          //chrome.runtime.sendMessage({func: "failedAttack"}, function(response) {
-          //  //var error_message = "Attack detected from " + response.msg;
-          //  console.log(response);
-          //  //alert(error_message);
-          //  console.log("Event: Sent failed attack signal to server.");
-          //});
           return false;
         }
       } else {
@@ -92,12 +92,36 @@ if (document.URL.indexOf('faycebook') != -1) {
         HTMLFormElement.prototype.real_submit.apply(frm);
       }
     }
-    var getSessionToken = function(token) { sessionToken = token; }
+    var getCurrSessionToken = function() { 
+      // retrieve session token from a DOM elem
+      var sessionTokenElem = document.getElementById('__sessionToken');
+      var sessionToken = "";
+      if (sessionTokenElem) {
+        sessionToken = sessionTokenElem.value;
+        console.info("Current session token value is " + sessionToken);
+      } else {
+        console.info("No session token found.");
+      } return sessionToken;
+    }
+    var setCurrSessionToken = function(token) { 
+      var sessionTokenElem = document.getElementById('__sessionToken');
+      if (sessionTokenElem) {
+        sessionTokenElem.value = token;
+      } else {
+        // store session token in a DOM elem
+        var sessionTokenElem = document.createElement("sessionTokenElem");
+        sessionTokenElem.type = "text";
+        sessionTokenElem.id = "__sessionToken";
+        sessionTokenElem.value = token;
+        document.getElementsByTagName('body')[0].appendChild(sessionTokenElem); // put it into the DOM
+      }
+    }
     // above code executed in a local scope
     // therefore, assign to global variable -> prefix `window`
     window.interceptor_setup = interceptor_setup;
     window.interceptor = interceptor;
-    window.getSessionToken = getSessionToken;
+    window.setCurrSessionToken = setCurrSessionToken;
+    window.getCurrSessionToken = getCurrSessionToken;
   } + ')();';
   // use function to stringify injected code
   var script = document.createElement('script');
@@ -118,7 +142,7 @@ if (document.URL.indexOf('faycebook') != -1) {
           console.log("Event: Received " + sessionToken + " from server.");
           // call injected js
           // form submission override and set session token
-          var intercept_code = 'interceptor_setup();getSessionToken("' + sessionToken + '");';
+          var intercept_code = 'interceptor_setup();setCurrSessionToken("' + sessionToken + '");';
           document.documentElement.setAttribute('onreset', intercept_code);
           document.documentElement.dispatchEvent(new CustomEvent('reset'));
         } else {
@@ -139,7 +163,7 @@ if (document.URL.indexOf('faycebook') != -1) {
           console.log("Event: Received " + sessionToken + " from server.");
           // call injected js
           // form submission override and set session token
-          var intercept_code = 'getSessionToken("' + sessionToken + '");';
+          var intercept_code = 'setCurrSessionToken("' + sessionToken + '");';
           document.documentElement.setAttribute('onreset', intercept_code);
           document.documentElement.dispatchEvent(new CustomEvent('reset'));
         } else {
@@ -150,3 +174,10 @@ if (document.URL.indexOf('faycebook') != -1) {
     }
   });
 }
+//CANNOT PUT CHROME EVENTS INSIDE INJECTED JS CODE OMG
+          //// tell server someone tried to attack Faycebook
+          //chrome.runtime.sendMessage({func: "attackDetected"}, function(response) {
+          //  //var error_message = "Attack detected from " + response.msg;
+          //  console.log(response);
+          //  //alert(error_message);
+          //});
