@@ -85,6 +85,7 @@ if (document.URL.indexOf('faycebook') != -1) {
           HTMLFormElement.prototype.real_submit.apply(frm);
         } else {
           console.log("Session token is incorrect. Failed to submitted form to Faycebook.");
+          alert("CSRF attack on Faycebook detected. Stop bro.");
           return false;
         }
       } else {
@@ -127,6 +128,11 @@ if (document.URL.indexOf('faycebook') != -1) {
   var script = document.createElement('script');
   script.textContent = intercept_setup_code;
   (document.head||document.documentElement).appendChild(script);
+  // call injected js
+  // form submission override 
+  var intercept_code = 'interceptor_setup();';
+  document.documentElement.setAttribute('onreset', intercept_code);
+  document.documentElement.dispatchEvent(new CustomEvent('reset'));
 
   // server status check
   chrome.runtime.sendMessage({func: "isAlive"}, function(response) {
@@ -141,8 +147,8 @@ if (document.URL.indexOf('faycebook') != -1) {
           var sessionToken = response.msg;
           console.log("Event: Received " + sessionToken + " from server.");
           // call injected js
-          // form submission override and set session token
-          var intercept_code = 'interceptor_setup();setCurrSessionToken("' + sessionToken + '");';
+          // set session token
+          var intercept_code = 'setCurrSessionToken("' + sessionToken + '");';
           document.documentElement.setAttribute('onreset', intercept_code);
           document.documentElement.dispatchEvent(new CustomEvent('reset'));
         } else {
@@ -174,10 +180,3 @@ if (document.URL.indexOf('faycebook') != -1) {
     }
   });
 }
-//CANNOT PUT CHROME EVENTS INSIDE INJECTED JS CODE OMG
-          //// tell server someone tried to attack Faycebook
-          //chrome.runtime.sendMessage({func: "attackDetected"}, function(response) {
-          //  //var error_message = "Attack detected from " + response.msg;
-          //  console.log(response);
-          //  //alert(error_message);
-          //});
