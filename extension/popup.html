@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <title>CSRF Protect</title>
+    <style>
+      body {
+        min-width: 357px;
+        overflow-x: hidden;
+      }
+
+      img {
+        margin: 5px;
+        border: 2px solid black;
+        vertical-align: middle;
+        width: 75px;
+        height: 75px;
+      }
+    </style>
+
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: http://developer.chrome.com/extensions/contentSecurityPolicy.html
+     -->
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    <h1>CSRF Protect</h1>
+    <p>Please input the domain name of the website to protect.</p>
+    <form name="siteProtectForm" id="siteProtectForm"
+      method="POST" action="javascript:void(0);">
+      <input name="Site" value="www.faycebook.com" />
+      <input type="submit" value="Protect!" />
+    </form>
+  </body>
+</html>
+

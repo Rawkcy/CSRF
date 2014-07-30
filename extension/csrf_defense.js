@@ -8,8 +8,44 @@
 
 console.log('CSRF protect is on.');
 
-if (document.URL.indexOf('faycebook') != -1) {
+var getSiteNameFunc = function() {
+  return "getSiteName()";
+}
+var getSiteName = function() {
+  var siteName = document.getElementById('__siteName');
+  if (siteName) {
+    return siteName.value;
+  } else {
+    return "faycebook";
+  }
+}
+var setSiteName = function(siteName) {
+  // generate DOM elem to hold site name value
+  var siteNameElem = document.createElement("input");
+  siteNameElem.setAttribute("id", "__siteName");
+  siteNameElem.setAttribute("value", siteName);
+  document.getElementsByTagName('body')[0].appendChild(siteNameElem);
+  document.getElementById('__siteName').setAttribute('type', 'hidden');
+}
+window.onload = function() {
+  setSiteName("faycebook"); // default ot Faycebook.com
+}
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.func == "siteNameUpdated") {
+    var siteName = request.msg;
+    console.log("site name updated to: " + siteName);
+    document.getElementById('__siteName').value = siteName;
+    if (document.URL.indexOf(siteName) == -1) {
+      console.log("Site protection switch detected! This site no longer under protection.");
+    } else {
+      console.log("Site protection switch detected! This site (www." + siteName + ".com) is now under protection.");
+    }
+  }
+});
 
+if (document.URL.indexOf(getSiteName()) != -1) {
+
+  console.log("This site is under protection!");
   // generate session token for Faycebook.com
   var rand = function() { return Math.random().toString(36).substr(2); }; // remove `0.`
   var generate_token = function() { return rand() + rand(); }; // to make it longer
@@ -17,13 +53,10 @@ if (document.URL.indexOf('faycebook') != -1) {
 
   // update form field with session token
   var token_field = document.createElement("input");
-  token_field.setAttribute("type", "hidden");
-  token_field.setAttribute("name", "__sessionToken");
+  token_field.setAttribute("id", "__sessionToken");
   token_field.setAttribute("value", token);
-  var forms = document.getElementsByTagName("form");
-  for (var i=0; i<forms.length; i++) {
-    forms[i].appendChild(token_field);
-  }
+  document.getElementsByTagName('html')[0].appendChild(token_field);
+  document.getElementById('__sessionToken').setAttribute('type', 'hidden');
 
   // check server status
   chrome.runtime.sendMessage({func: "isAlive"}, function(response) {
@@ -52,7 +85,6 @@ if (document.URL.indexOf('faycebook') != -1) {
 
   // js injection to override form submissions
   var intercept_setup_code = '(' + function() {
-//    var sessionToken;
     var interceptor_setup = function() {
       HTMLFormElement.prototype.real_submit = HTMLFormElement.prototype.submit;
       HTMLFormElement.prototype.submit = interceptor;
@@ -64,10 +96,11 @@ if (document.URL.indexOf('faycebook') != -1) {
     }
     var interceptor = function(e) {
       var frm = e ? e.target : this;
+      var siteName = getSiteName();
       // is form being submitted to Faycebook?
-      var request_to_fb = (frm.action.indexOf("faycebook") != -1);
+      var request_to_protected_site = (frm.action.indexOf(siteName) != -1);
 
-      if (request_to_fb) {
+      if (request_to_protected_site) {
         var inputs = frm.getElementsByTagName("input");
         var has_sessionToken_input = false;
         for (var i = 0; i < inputs.length; i++) {
@@ -78,19 +111,19 @@ if (document.URL.indexOf('faycebook') != -1) {
           }
         }
       }
-      if (request_to_fb && has_sessionToken_input) {
-        console.log("Submitting form to Faycebook with session token: " + token);
+      // validation output
+      if (request_to_protected_site && has_sessionToken_input) {
+        console.log("Submitting form to " + siteName + " with session token: " + token);
         if (token_matches) {
-          console.log("Session token is correct. Successfully submitted form to Faycebook.");
-          HTMLFormElement.prototype.real_submit.apply(frm);
+          console.log("Session token is correct. Form submission successful.");
+          //HTMLFormElement.prototype.real_submit.apply(frm);
         } else {
-          console.log("Session token is incorrect. Failed to submitted form to Faycebook.");
-          alert("CSRF attack on Faycebook detected. Stop bro.");
+          console.log("Session token is incorrect. Form submission rejected.");
+          alert("Are you trying to CSRF attack on " + siteName + "? Shtop.");
           return false;
         }
       } else {
-        console.log("Not submitting form to Faycebook.");
-        HTMLFormElement.prototype.real_submit.apply(frm);
+        console.log("Successfully submitted form since destination site is not protected.");
       }
     }
     var getCurrSessionToken = function() { 
@@ -109,12 +142,20 @@ if (document.URL.indexOf('faycebook') != -1) {
       if (sessionTokenElem) {
         sessionTokenElem.value = token;
       } else {
-        // store session token in a DOM elem
-        var sessionTokenElem = document.createElement("sessionTokenElem");
-        sessionTokenElem.type = "text";
+        // store session token in the DOM
+        var sessionTokenElem = document.createElement("input");
         sessionTokenElem.id = "__sessionToken";
         sessionTokenElem.value = token;
-        document.getElementsByTagName('body')[0].appendChild(sessionTokenElem); // put it into the DOM
+        document.getElementsByTagName('body')[0].appendChild(sessionTokenElem);
+        document.getElementById('__sessionToken').setAttribute('type', 'hidden');
+      }
+    }
+    var getSiteName = function() {
+      var siteName = document.getElementById('__siteName');
+      if (siteName) {
+        return siteName.value;
+      } else {
+        return "faycebook";
       }
     }
     // above code executed in a local scope
@@ -123,6 +164,7 @@ if (document.URL.indexOf('faycebook') != -1) {
     window.interceptor = interceptor;
     window.setCurrSessionToken = setCurrSessionToken;
     window.getCurrSessionToken = getCurrSessionToken;
+    window.getSiteName = getSiteName;
   } + ')();';
   // use function to stringify injected code
   var script = document.createElement('script');
@@ -152,7 +194,7 @@ if (document.URL.indexOf('faycebook') != -1) {
           document.documentElement.setAttribute('onreset', intercept_code);
           document.documentElement.dispatchEvent(new CustomEvent('reset'));
         } else {
-          console.log("Event: Unable to retrieve token from server. There is likely no Faycebook session open.");
+          console.log("Event: Unable to retrieve token from server. There is likely no session open.");
         }
       });
     } else {
@@ -160,7 +202,7 @@ if (document.URL.indexOf('faycebook') != -1) {
     }
   });
   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.msg == "tokenUpdated") {
+    if (request.func == "tokenUpdated") {
       console.log("Event: Token was updated on server. Retrieving new session token ...");
       chrome.runtime.sendMessage({func: "getToken"}, function(response) {
         if (response.flag == 0) {
@@ -173,7 +215,7 @@ if (document.URL.indexOf('faycebook') != -1) {
           document.documentElement.setAttribute('onreset', intercept_code);
           document.documentElement.dispatchEvent(new CustomEvent('reset'));
         } else {
-          console.log("Event: Unable to retrieve token from server. There is likely no Faycebook session open.");
+          console.log("Event: Unable to retrieve token from server. There is likely no session open.");
         }
       });
       sendResponse({flag:0, msg:""});

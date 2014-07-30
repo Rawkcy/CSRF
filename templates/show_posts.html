@@ -1,17 +1,5 @@
 {% extends "layout.html" %}
 {% block body %}
-  {% if user.email %}
-    <form action="{{ url_for('add_post') }}" method=post class=add-entry>
-      <dl>
-        <dt>User:
-        <dd><input type=text size=30 name=user>
-        <dt>Status:
-        <dd><textarea name=status rows=5 cols=40></textarea>
-        <!--<dd><input type="hidden" name="__sessionToken">-->
-        <dd><input type=submit value=Share>
-      </dl>
-    </form>
-  {% endif %}
   <ul class=entries>
   {% for post in posts %}
     <li><h2>{{ post['user'] }}</h2>
@@ -21,7 +9,4 @@
     <li><em>Unbelievable. No posts here so far!</em>
   {% endfor %}
   </ul>
-  <script type="text/javascript">
-    // FUNCTION MOVED TO EXTENSION JS CODE
-  </script>
 {% endblock %}
