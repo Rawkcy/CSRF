@@ -40,6 +40,10 @@ Ze Stack Dou
   - Flask if a microframework for quickly creating Python web applications
 - Stormpath
   - online user login hosting service for Flask applications
+- Chrome Extension
+  - content_script.js (injects code into DOM)
+  - popup.js
+  - background.js
 
 CREDITS
 -------
